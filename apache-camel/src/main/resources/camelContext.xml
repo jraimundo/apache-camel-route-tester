@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd">
+
+    <!-- spring property placeholder, ignore resource not found as the file resource is for unit testing -->
+    <context:property-placeholder location="classpath:router.properties" ignore-resource-not-found="true"/>
+
+    <!-- this is the CXF web services we use as the front end -->
+    <cxf:cxfEndpoint id="HelloService"
+                     address="${router.endpoint.prefix}/HelloService"
+                     endpointName="s:Hello_Port"
+                     serviceName="s:Hello_Service"
+                     wsdlURL="wsdl/helloService.wsdl"
+                     xmlns:s="http://www.examples.com/wsdl/HelloService.wsdl"/>
+    
+    <!-- -->
+    
+    <!-- Custom Logs -->
+    <bean name="Route1logFormatter" class="org.tests.apache.camel.route.tester.log.Route1ExchangeFormatter"/>
+    <bean name="Route2logFormatter" class="org.tests.apache.camel.route.tester.log.Route2ExchangeFormatter"/>
+    
+    <bean name="logRoute1" class="org.apache.camel.component.log.LogComponent">
+        <property name="exchangeFormatter" ref="Route1logFormatter"/>
+    </bean>
+    
+    <bean name="logRoute2" class="org.apache.camel.component.log.LogComponent">
+        <property name="exchangeFormatter" ref="Route2logFormatter"/>
+    </bean>
+    <!-- -->
+    
+    <!-- these are the Camel routes which proxies the real web service and forwards SOAP requests to it -->
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
+        
+        <!-- property which contains endpoints -->
+        <propertyPlaceholder id="properties" location="classpath:router.properties"/>
+        
+        <!-- getConfiguration2 -->
+        <endpoint id="route1Endpoint" uri="${router.destination.endpoint.prefix.route1}/getConfiguration2?bridgeEndpoint=true&amp;throwExceptionOnFailure=false"/>
+        <endpoint id="route2Endpoint" uri="${router.destination.endpoint.prefix.route2}/getConfiguration2?bridgeEndpoint=true&amp;throwExceptionOnFailure=false"/>
+        
+        <!-- getConfiguration2 -->
+        <route streamCache="true">
+            <!--CXF consumer using MESSAGE format--> 
+            <from uri="cxf:bean:HelloService?dataFormat=MESSAGE"/>
+            
+            <choice>
+                <when>
+                    <simple>${bodyAs(java.lang.String)} regex ${properties:router.body.tag.route.regex}</simple>
+                    <to uri="logRoute1:HelloService"/>
+                    <to uri="route1Endpoint"/>
+                </when>
+                <otherwise>
+                    <to uri="logRoute2:HelloService"/>
+                    <to uri="route2Endpoint"/>
+                </otherwise>
+            </choice>
+            
+        </route>
+    
+    </camelContext>
+    <!-- -->
+
+</beans>
+<!-- END SNIPPET: e1 -->
