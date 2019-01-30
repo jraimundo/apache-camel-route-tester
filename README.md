@@ -1,5 +1,6 @@
 # apache-camel-route-tester
-A perfomance test for an Apache Camel Route
+A perfomance test for an Apache Camel Route.
+This example is meant to show that Apache Camel has very low throughput when server requests take some time, like 1s.
 
 Apache Camel application can be start with the following command:
 ```console
