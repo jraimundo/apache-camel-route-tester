@@ -43,9 +43,9 @@
         <!-- property which contains endpoints -->
         <propertyPlaceholder id="properties" location="classpath:router.properties"/>
         
-        <!-- getConfiguration2 -->
-        <endpoint id="route1Endpoint" uri="${router.destination.endpoint.prefix.route1}/getConfiguration2?bridgeEndpoint=true&amp;throwExceptionOnFailure=false"/>
-        <endpoint id="route2Endpoint" uri="${router.destination.endpoint.prefix.route2}/getConfiguration2?bridgeEndpoint=true&amp;throwExceptionOnFailure=false"/>
+        <!-- endpoints -->
+        <endpoint id="route1Endpoint" uri="${router.destination.endpoint.prefix.route1}/getConfiguration2?bridgeEndpoint=true&amp;connectionsPerRoute=100"/>
+        <endpoint id="route2Endpoint" uri="${router.destination.endpoint.prefix.route2}/getConfiguration2?bridgeEndpoint=true&amp;connectionsPerRoute=100"/>
         
         <!-- getConfiguration2 -->
         <route streamCache="true">
